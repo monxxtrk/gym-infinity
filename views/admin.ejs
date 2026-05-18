@@ -145,8 +145,8 @@
                 <tbody>
                   <% products.forEach((product) => { %>
                     <tr>
-                      <td><%= product.id %></td>
-                      <td>
+                      <td data-label="ID"><%= product.id %></td>
+                      <td data-label="Producto">
                         <div class="table-media">
                           <img
                             src="<%= product.image_url || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80' %>"
@@ -156,9 +156,9 @@
                           <strong><%= product.name %></strong>
                         </div>
                       </td>
-                      <td><%= product.price %></td>
-                      <td><%= product.description %></td>
-                      <td class="action-cell">
+                      <td data-label="Precio"><%= product.price %></td>
+                      <td data-label="Descripcion"><%= product.description %></td>
+                      <td class="action-cell" data-label="Editar">
                         <details class="edit-panel">
                           <summary>Editar</summary>
                           <form action="/admin/products/update" method="POST" class="inline-form">
@@ -172,7 +172,7 @@
                           </form>
                         </details>
                       </td>
-                      <td class="action-cell">
+                      <td class="action-cell" data-label="Eliminar">
                         <form action="/admin/products/delete" method="POST" class="inline-form inline-form-danger">
                           <input type="hidden" name="csrfToken" value="<%= csrfToken %>" />
                           <input type="hidden" name="id" value="<%= product.id %>" />
@@ -244,11 +244,11 @@
                 <tbody>
                   <% plans.forEach((plan) => { %>
                     <tr>
-                      <td><%= plan.id %></td>
-                      <td><strong><%= plan.name %></strong></td>
-                      <td><%= plan.price %></td>
-                      <td><%= plan.features %></td>
-                      <td class="action-cell">
+                      <td data-label="ID"><%= plan.id %></td>
+                      <td data-label="Plan"><strong><%= plan.name %></strong></td>
+                      <td data-label="Precio"><%= plan.price %></td>
+                      <td data-label="Descripcion"><%= plan.features %></td>
+                      <td class="action-cell" data-label="Editar">
                         <details class="edit-panel">
                           <summary>Editar</summary>
                           <form action="/admin/plans/update" method="POST" class="inline-form">
@@ -261,7 +261,7 @@
                           </form>
                         </details>
                       </td>
-                      <td class="action-cell">
+                      <td class="action-cell" data-label="Eliminar">
                         <form action="/admin/plans/delete" method="POST" class="inline-form inline-form-danger">
                           <input type="hidden" name="csrfToken" value="<%= csrfToken %>" />
                           <input type="hidden" name="id" value="<%= plan.id %>" />
@@ -341,12 +341,12 @@
                 <tbody>
                   <% workouts.forEach((workout) => { %>
                     <tr>
-                      <td><%= workout.id %></td>
-                      <td><strong><%= workout.title %></strong></td>
-                      <td><%= workout.duration %></td>
-                      <td><%= workout.difficulty %></td>
-                      <td><%= workout.description %></td>
-                      <td class="action-cell">
+                      <td data-label="ID"><%= workout.id %></td>
+                      <td data-label="Rutina"><strong><%= workout.title %></strong></td>
+                      <td data-label="Duracion"><%= workout.duration %></td>
+                      <td data-label="Dificultad"><%= workout.difficulty %></td>
+                      <td data-label="Descripcion"><%= workout.description %></td>
+                      <td class="action-cell" data-label="Editar">
                         <details class="edit-panel">
                           <summary>Editar</summary>
                           <form action="/admin/workouts/update" method="POST" class="inline-form">
@@ -360,7 +360,7 @@
                           </form>
                         </details>
                       </td>
-                      <td class="action-cell">
+                      <td class="action-cell" data-label="Eliminar">
                         <form action="/admin/workouts/delete" method="POST" class="inline-form inline-form-danger">
                           <input type="hidden" name="csrfToken" value="<%= csrfToken %>" />
                           <input type="hidden" name="id" value="<%= workout.id %>" />
@@ -432,11 +432,11 @@
                 <tbody>
                   <% diets.forEach((diet) => { %>
                     <tr>
-                      <td><%= diet.id %></td>
-                      <td><strong><%= diet.title %></strong></td>
-                      <td><%= diet.calories %></td>
-                      <td><%= diet.description %></td>
-                      <td class="action-cell">
+                      <td data-label="ID"><%= diet.id %></td>
+                      <td data-label="Dieta"><strong><%= diet.title %></strong></td>
+                      <td data-label="Calorias"><%= diet.calories %></td>
+                      <td data-label="Descripcion"><%= diet.description %></td>
+                      <td class="action-cell" data-label="Editar">
                         <details class="edit-panel">
                           <summary>Editar</summary>
                           <form action="/admin/diets/update" method="POST" class="inline-form">
@@ -449,7 +449,7 @@
                           </form>
                         </details>
                       </td>
-                      <td class="action-cell">
+                      <td class="action-cell" data-label="Eliminar">
                         <form action="/admin/diets/delete" method="POST" class="inline-form inline-form-danger">
                           <input type="hidden" name="csrfToken" value="<%= csrfToken %>" />
                           <input type="hidden" name="id" value="<%= diet.id %>" />
@@ -489,22 +489,22 @@
               <tbody>
                 <% users.forEach((user) => { %>
                   <tr>
-                    <td><%= user.id %></td>
-                    <td>
+                    <td data-label="ID"><%= user.id %></td>
+                    <td data-label="Usuario">
                       <strong><%= user.name %></strong>
                       <div class="table-meta"><%= user.email %></div>
                       <div class="table-meta"><%= user.phone %></div>
                     </td>
-                    <td><%= user.plan %></td>
-                    <td><%= user.goal %></td>
-                    <td><%= user.age %> años · <%= user.weight %> kg · <%= user.height %> cm</td>
-                    <td><%= user.createdAtLabel %></td>
-                    <td>
+                    <td data-label="Plan"><%= user.plan %></td>
+                    <td data-label="Objetivo"><%= user.goal %></td>
+                    <td data-label="Perfil"><%= user.age %> años · <%= user.weight %> kg · <%= user.height %> cm</td>
+                    <td data-label="Registro"><%= user.createdAtLabel %></td>
+                    <td data-label="Membresia">
                       <span class="badge <%= user.membershipTone %>"><%= user.membershipLabel %></span>
                       <div class="table-meta"><%= user.daysRemaining %> días restantes</div>
                       <div class="table-meta">Vence: <%= user.expiryLabel %></div>
                     </td>
-                    <td>
+                    <td data-label="Renovar">
                       <form action="/admin/user/renew" method="POST" class="inline-form">
                         <input type="hidden" name="csrfToken" value="<%= csrfToken %>" />
                         <input type="hidden" name="userId" value="<%= user.id %>" />
@@ -543,16 +543,16 @@
               <tbody>
                 <% orders.forEach((order) => { %>
                   <tr>
-                    <td><%= order.id %></td>
-                    <td><strong><%= order.productName %></strong></td>
-                    <td>
+                    <td data-label="ID"><%= order.id %></td>
+                    <td data-label="Producto"><strong><%= order.productName %></strong></td>
+                    <td data-label="Cliente">
                       <strong><%= order.full_name %></strong>
                       <div class="table-meta"><%= order.email %></div>
                     </td>
-                    <td><%= order.address %></td>
-                    <td><%= order.createdAtLabel %></td>
-                    <td><span class="badge <%= order.statusTone %>"><%= order.status %></span></td>
-                    <td>
+                    <td data-label="Direccion"><%= order.address %></td>
+                    <td data-label="Fecha"><%= order.createdAtLabel %></td>
+                    <td data-label="Estado"><span class="badge <%= order.statusTone %>"><%= order.status %></span></td>
+                    <td data-label="Actualizar">
                       <form action="/admin/orders/status" method="POST" class="inline-form">
                         <input type="hidden" name="csrfToken" value="<%= csrfToken %>" />
                         <input type="hidden" name="orderId" value="<%= order.id %>" />
