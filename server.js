@@ -18,6 +18,19 @@ const PAYMENT_METHOD_LABELS = {
   card: 'Tarjeta de credito',
   cash: 'Efectivo'
 };
+const BUSINESS_INFO = {
+  name: 'Gyminfinity',
+  legalName: 'Gyminfinity Centro de Acondicionamiento Fisico',
+  taxId: 'NIT 900.000.000-1',
+  address: 'Sede principal Gyminfinity, Colombia',
+  phone: '+57 300 000 0000',
+  email: 'facturacion@gyminfinity.com',
+  city: 'Bogota, Colombia'
+};
+const PAYMENT_DESTINATIONS = {
+  card: 'Cuenta bancaria Gyminfinity - pagos con tarjeta conciliados por administracion',
+  cash: 'Caja general Gyminfinity - efectivo pendiente de confirmacion administrativa'
+};
 const GOALS = [
   'Perder peso',
   'Ganar músculo',
@@ -234,6 +247,18 @@ const createInvoiceNumber = (orderId) => {
 
 const createPaymentReference = (prefix = 'PAY') => `${prefix}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
+const parseMoneyValue = (value) => {
+  const digits = String(value || '').replace(/[^\d]/g, '');
+  const parsed = Number.parseInt(digits, 10);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const formatCurrency = (value, currency = 'COP') => new Intl.NumberFormat('es-CO', {
+  currency,
+  maximumFractionDigits: 0,
+  style: 'currency'
+}).format(Number(value) || 0);
+
 const isValidImageUrl = (value) => {
   if (!value) {
     return true;
@@ -327,16 +352,35 @@ const decorateOrder = (order, products) => {
 
   return {
     ...order,
+    amountLabel: formatCurrency(order.amount_total || parseMoneyValue(product?.price), order.currency || 'COP'),
     createdAtLabel: formatDateTime(order.created_at),
     invoiceNumber: order.invoice_number || `Pendiente #${order.id}`,
     paymentMethodLabel: PAYMENT_METHOD_LABELS[order.payment_method] || 'Sin metodo',
+    paymentDestination: order.payment_destination || PAYMENT_DESTINATIONS[order.payment_method] || 'Sin destino registrado',
     paymentStatusTone,
     productName: product ? product.name : 'Producto no disponible',
+    productPriceLabel: product ? product.price : formatCurrency(order.amount_total, order.currency || 'COP'),
     statusTone
   };
 };
 
 const sortByIdAscending = (items) => [...items].sort((left, right) => left.id - right.id);
+
+const buildRevenueSummary = (orders) => {
+  const paidOrders = orders.filter((order) => order.payment_status === 'Pagado');
+  const pendingOrders = orders.filter((order) => order.payment_status === 'Pendiente');
+  const cardPaid = paidOrders.filter((order) => order.payment_method === 'card');
+  const cashPaid = paidOrders.filter((order) => order.payment_method === 'cash');
+  const sumOrders = (items) => items.reduce((total, order) => total + (Number(order.amount_total) || 0), 0);
+
+  return {
+    cardPaidLabel: formatCurrency(sumOrders(cardPaid)),
+    cashPaidLabel: formatCurrency(sumOrders(cashPaid)),
+    paidLabel: formatCurrency(sumOrders(paidOrders)),
+    pendingLabel: formatCurrency(sumOrders(pendingOrders)),
+    totalLabel: formatCurrency(sumOrders(orders))
+  };
+};
 
 const redirectWithFlash = (req, res, target, type, text) => {
   setFlash(req.session, type, text);
@@ -709,11 +753,13 @@ app.get('/admin', requireAdmin, asyncHandler(async (req, res) => {
 
   const decoratedUsers = users.map(decorateUser);
   const decoratedOrders = orders.map((order) => decorateOrder(order, products));
+  const revenue = buildRevenueSummary(decoratedOrders);
   const metrics = {
     activeUsers: decoratedUsers.filter((user) => !user.isExpired).length,
     expiredUsers: decoratedUsers.filter((user) => user.isExpired).length,
     paidInvoices: decoratedOrders.filter((order) => order.payment_status === 'Pagado').length,
     pendingOrders: decoratedOrders.filter((order) => order.status === 'Pendiente').length,
+    revenuePaid: revenue.paidLabel,
     totalOrders: decoratedOrders.length,
     totalProducts: products.length,
     totalUsers: decoratedUsers.length
@@ -731,6 +777,7 @@ app.get('/admin', requireAdmin, asyncHandler(async (req, res) => {
     orderStatuses: ORDER_STATUSES,
     orders: decoratedOrders,
     paymentStatuses: PAYMENT_STATUSES,
+    revenue,
     plans: sortByIdAscending(plans),
     products: sortByIdAscending(products),
     users: decoratedUsers,
@@ -1130,6 +1177,7 @@ app.post('/order', requireCsrf, requireClient, asyncHandler(async (req, res) => 
     return;
   }
 
+  const amountTotal = parseMoneyValue(product.price);
   const paymentData = {
     card_brand: null,
     card_holder: null,
@@ -1179,7 +1227,10 @@ app.post('/order', requireCsrf, requireClient, asyncHandler(async (req, res) => 
     email: req.currentUser.email,
     full_name: req.currentUser.name,
     invoice_status: 'Emitida',
+    amount_total: amountTotal,
+    currency: 'COP',
     payment_method: paymentMethod,
+    payment_destination: PAYMENT_DESTINATIONS[paymentMethod],
     product_id: productId,
     status: 'Pendiente',
     user_id: req.currentUser.id,
@@ -1192,10 +1243,40 @@ app.post('/order', requireCsrf, requireClient, asyncHandler(async (req, res) => 
   redirectWithFlash(
     req,
     res,
-    '/client#catalogo',
+    `/invoice/${invoiceNumber}`,
     'success',
-    `Factura ${invoiceNumber} emitida para ${product.name}. Metodo: ${PAYMENT_METHOD_LABELS[paymentMethod]}.`
+    `Factura ${invoiceNumber} emitida correctamente.`
   );
+}));
+
+app.get('/invoice/:invoiceNumber', asyncHandler(async (req, res) => {
+  const invoiceNumber = trimText(req.params.invoiceNumber, 40);
+  const order = await db.queryOne('SELECT * FROM orders WHERE invoice_number = ?', [invoiceNumber]);
+
+  if (!order) {
+    res.status(404);
+    renderPage(req, res, '404');
+    return;
+  }
+
+  const viewer = await getViewer(req);
+  res.locals.viewer = viewer;
+
+  const canViewInvoice = viewer.isAdmin || (viewer.isClient && viewer.user?.id === order.user_id);
+  if (!canViewInvoice) {
+    redirectWithFlash(req, res, '/client-login', 'warning', 'Inicia sesion para ver esta factura.');
+    return;
+  }
+
+  const product = await db.getById('products', order.product_id);
+  const invoice = decorateOrder(order, product ? [product] : []);
+
+  renderPage(req, res, 'invoice', {
+    business: BUSINESS_INFO,
+    invoice,
+    product,
+    viewer
+  });
 }));
 
 app.get('/client/renew', asyncHandler(async (req, res) => {
@@ -1240,13 +1321,22 @@ app.use((error, req, res, next) => {
   res.redirect(target);
 });
 
-db.ready
-  .then(() => {
-    app.listen(port, () => {
-      console.log(`Gyminfinity funcionando en http://localhost:${port}`);
-    });
-  })
-  .catch((error) => {
+const startServer = async () => {
+  await db.ready;
+  return app.listen(port, () => {
+    console.log(`Gyminfinity funcionando en http://localhost:${port}`);
+  });
+};
+
+if (require.main === module) {
+  startServer().catch((error) => {
     console.error('No se pudo iniciar Gyminfinity.', error);
     process.exit(1);
   });
+}
+
+module.exports = {
+  app,
+  db,
+  startServer
+};

@@ -24,7 +24,6 @@
         <a href="#products">Productos</a>
         <a href="#users">Usuarios</a>
         <a href="#orders">Pedidos</a>
-        <a href="#billing">Facturacion</a>
         <a href="/">Ver sitio</a>
         <form action="/logout" method="POST" class="inline-action">
           <input type="hidden" name="csrfToken" value="<%= csrfToken %>" />
@@ -61,12 +60,6 @@
             <span class="metric-label">Pedidos</span>
             <strong><%= metrics.totalOrders %></strong>
             <p><%= metrics.pendingOrders %> pendientes por revisar</p>
-          </article>
-
-          <article class="metric-card">
-            <span class="metric-label">Facturas pagadas</span>
-            <strong><%= metrics.paidInvoices %></strong>
-            <p>Tarjeta confirmada o efectivo conciliado</p>
           </article>
 
           <article class="metric-card">
@@ -545,76 +538,6 @@
                           <% }) %>
                         </select>
                         <button type="submit" class="btn btn-secondary btn-small">Guardar</button>
-                      </form>
-                    </td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-
-      <section id="billing" class="section section-dark">
-        <div class="section-heading">
-          <span class="section-kicker">Facturacion</span>
-          <h2>Consulta facturas, metodo de pago y datos fiscales de cada compra.</h2>
-        </div>
-
-        <article class="table-card">
-          <div class="table-wrap">
-            <table class="data-table billing-table">
-              <thead>
-                <tr>
-                  <th>Factura</th>
-                  <th>Cliente fiscal</th>
-                  <th>Producto</th>
-                  <th>Metodo</th>
-                  <th>Pago</th>
-                  <th>Referencia</th>
-                  <th>Detalle</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% orders.forEach((order) => { %>
-                  <tr>
-                    <td>
-                      <strong><%= order.invoiceNumber %></strong>
-                      <div class="table-meta"><%= order.invoice_status || 'Emitida' %></div>
-                      <div class="table-meta"><%= order.createdAtLabel %></div>
-                    </td>
-                    <td>
-                      <strong><%= order.billing_name || order.full_name %></strong>
-                      <div class="table-meta">Doc: <%= order.billing_document || 'No registrado' %></div>
-                      <div class="table-meta"><%= order.billing_email || order.email %></div>
-                      <div class="table-meta"><%= order.billing_phone || 'Sin telefono' %></div>
-                    </td>
-                    <td><%= order.productName %></td>
-                    <td><%= order.paymentMethodLabel %></td>
-                    <td><span class="badge <%= order.paymentStatusTone %>"><%= order.payment_status || 'Pendiente' %></span></td>
-                    <td><%= order.payment_reference || 'Sin referencia' %></td>
-                    <td>
-                      <% if (order.payment_method === 'card') { %>
-                        <strong><%= order.card_brand || 'Tarjeta' %> **** <%= order.card_last4 || '----' %></strong>
-                        <div class="table-meta">Titular: <%= order.card_holder || 'No registrado' %></div>
-                        <div class="table-meta">Cuotas: <%= order.card_installments || 1 %></div>
-                      <% } else if (order.payment_method === 'cash') { %>
-                        <strong>Pago en efectivo</strong>
-                        <div class="table-meta">Entrega: <%= order.cash_receiver || order.billing_name || order.full_name %></div>
-                        <div class="table-meta"><%= order.cash_notes || 'Sin notas de caja' %></div>
-                      <% } else { %>
-                        <strong>Sin metodo registrado</strong>
-                        <div class="table-meta">Pedido anterior al modulo de facturacion.</div>
-                      <% } %>
-                      <form action="/admin/billing/status" method="POST" class="inline-form billing-status-form">
-                        <input type="hidden" name="csrfToken" value="<%= csrfToken %>" />
-                        <input type="hidden" name="orderId" value="<%= order.id %>" />
-                        <select name="paymentStatus" required>
-                          <% paymentStatuses.forEach((status) => { %>
-                            <option value="<%= status %>" <%= order.payment_status === status ? 'selected' : '' %>><%= status %></option>
-                          <% }) %>
-                        </select>
-                        <button type="submit" class="btn btn-secondary btn-small">Actualizar pago</button>
                       </form>
                     </td>
                   </tr>

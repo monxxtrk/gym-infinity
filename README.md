@@ -29,13 +29,59 @@ Plataforma web para Gyminfinity con sitio público, área privada de cliente y d
 - `npm run dev`: inicia el servidor en modo watch.
 - `npm run check`: verifica sintaxis de los archivos JavaScript principales.
 
+## Pruebas automatizadas
+
+El proyecto usa Jest + Supertest para probar rutas de Express sin levantar manualmente el servidor.
+
+Comandos de pruebas:
+
+- `npm test`: ejecuta las pruebas automatizadas.
+- `npm run test:watch`: ejecuta las pruebas en modo observacion mientras desarrollas.
+
+Las pruebas actuales cubren:
+
+- Carga de la pagina principal.
+- Inicio de sesion administrativa con CSRF y sesion.
+- Registro de cliente y generacion de factura con tarjeta de credito.
+
+Los tests usan una base SQLite separada (`__tests__/gyminfinity.test.db`) que se crea y elimina durante la ejecucion, para no modificar `gyminfinity.db`.
+
 ## Variables de entorno
 
 - `PORT`: puerto del servidor.
 - `NODE_ENV`: usa `production` en despliegue.
+- `DB_FILE`: ruta opcional de la base SQLite. Si no se define, usa `gyminfinity.db`.
 - `ADMIN_USERNAME`: usuario del panel administrativo.
 - `ADMIN_PASSWORD`: contraseña del panel administrativo.
 - `ADMIN_PASSWORD_HASH`: alternativa opcional para definir la contraseña ya hasheada en hexadecimal.
+
+## Base de datos y dinero recibido
+
+La base de datos principal esta en el archivo `gyminfinity.db`, en la raiz del proyecto.
+
+Para verla y modificar datos manualmente puedes usar una herramienta como DB Browser for SQLite y abrir:
+
+`C:\Users\MI PC\gyminfinity-site\gyminfinity.db`
+
+Tablas importantes:
+
+- `users`: clientes, planes y vencimiento de membresia.
+- `products`: productos y precios visibles.
+- `orders`: pedidos, factura, metodo de pago, estado de pago, monto y destino del dinero.
+
+En el panel administrativo, entra a `Facturacion` para ver:
+
+- Dinero confirmado total.
+- Dinero por tarjeta.
+- Dinero en efectivo.
+- Facturas pendientes.
+
+El campo `payment_destination` indica a donde se registra el dinero:
+
+- Tarjeta: cuenta bancaria Gyminfinity.
+- Efectivo: caja general Gyminfinity.
+
+Esta implementacion deja la trazabilidad interna. Para que el dinero llegue realmente a una cuenta bancaria externa hace falta conectar una pasarela de pagos real, como Stripe, Mercado Pago, Wompi o PayU.
 
 ## Estructura principal
 

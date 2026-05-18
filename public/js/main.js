@@ -149,4 +149,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     syncPaymentFields();
   });
+
+  document.querySelectorAll('[data-print-invoice]').forEach((button) => {
+    button.addEventListener('click', () => {
+      window.print();
+    });
+  });
 });

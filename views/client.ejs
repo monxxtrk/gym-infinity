@@ -244,7 +244,12 @@
                       </div>
                     </div>
 
-                    <div class="payment-fields" data-payment-section="cash" hidden>
+                    <div class="payment-fields cash-invoice-panel" data-payment-section="cash" hidden>
+                      <p class="form-note">
+                        La factura de efectivo queda emitida como pendiente. El dinero entra a Caja general Gyminfinity
+                        y administracion la marca como pagada cuando reciba el efectivo.
+                      </p>
+
                       <div class="field">
                         <label for="cash-receiver-<%= product.id %>">Persona que entrega el efectivo</label>
                         <input id="cash-receiver-<%= product.id %>" type="text" name="cashReceiver" maxlength="100" value="<%= currentUser.name %>" />

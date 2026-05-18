@@ -1,7 +1,7 @@
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 
-const dbFile = path.join(__dirname, 'gyminfinity.db');
+const dbFile = process.env.DB_FILE || path.join(__dirname, 'gyminfinity.db');
 const db = new sqlite3.Database(dbFile);
 
 const allowedTables = new Set(['users', 'workouts', 'diets', 'products', 'plans', 'orders']);
@@ -150,6 +150,9 @@ const createTables = async () => {
   await ensureColumn('orders', 'billing_email', 'TEXT');
   await ensureColumn('orders', 'billing_address', 'TEXT');
   await ensureColumn('orders', 'payment_reference', 'TEXT');
+  await ensureColumn('orders', 'amount_total', 'REAL');
+  await ensureColumn('orders', 'currency', "TEXT DEFAULT 'COP'");
+  await ensureColumn('orders', 'payment_destination', 'TEXT');
   await ensureColumn('orders', 'card_brand', 'TEXT');
   await ensureColumn('orders', 'card_last4', 'TEXT');
   await ensureColumn('orders', 'card_holder', 'TEXT');
@@ -294,9 +297,21 @@ const remove = async (table, id) => {
   return run(`DELETE FROM ${safeTable} WHERE id = ?`, [id]);
 };
 
+const close = () => new Promise((resolve, reject) => {
+  db.close((err) => {
+    if (err) {
+      reject(err);
+      return;
+    }
+
+    resolve();
+  });
+});
+
 const ready = createTables();
 
 module.exports = {
+  close,
   getAll,
   getById,
   insert,
