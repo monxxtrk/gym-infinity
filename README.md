@@ -47,7 +47,7 @@ Configure las credenciales administrativas dentro de `.env`:
 
 ```env
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=CAMBIA_ESTA_CLAVE
+ADMIN_PASSWORD=papitas12
 ```
 
 Inicie el servidor:
@@ -119,7 +119,7 @@ Variables de entorno recomendadas:
 ```env
 NODE_ENV=production
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=clave_segura
+ADMIN_PASSWORD=papitas12
 ```
 
 ## Base de datos
