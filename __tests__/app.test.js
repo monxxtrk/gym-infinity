@@ -5,7 +5,7 @@ const request = require('supertest');
 const testDbFile = path.join(__dirname, 'gyminfinity.test.db');
 process.env.DB_FILE = testDbFile;
 process.env.NODE_ENV = 'test';
-process.env.ADMIN_PASSWORD = 'GYMADMIN2026';
+process.env.ADMIN_PASSWORD = 'papitas12';
 
 const { app, db } = require('../server');
 
@@ -48,14 +48,14 @@ describe('Gyminfinity app', () => {
       .type('form')
       .send({
         csrfToken,
-        password: 'GYMADMIN2026',
+        password: 'papitas12',
         username: 'admin'
       })
       .expect(302)
       .expect('Location', '/admin');
 
     const adminPage = await agent.get('/admin').expect(200);
-    expect(adminPage.text).toContain('Facturacion');
+    expect(adminPage.text).toContain('Dashboard Gyminfinity');
   });
 
   test('registra un cliente y genera factura con tarjeta de credito', async () => {

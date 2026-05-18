@@ -795,6 +795,43 @@ select:focus {
   box-shadow: 0 0 0 4px rgba(139, 99, 255, 0.16);
 }
 
+.password-control {
+  position: relative;
+}
+
+.password-control input {
+  padding-right: 86px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  min-width: 64px;
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 800;
+  transform: translateY(-50%);
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.password-toggle:hover {
+  border-color: rgba(139, 99, 255, 0.5);
+  background: rgba(139, 99, 255, 0.2);
+  transform: translateY(-50%) scale(1.02);
+}
+
+.password-toggle:focus-visible {
+  outline: none;
+  border-color: rgba(139, 99, 255, 0.68);
+  box-shadow: 0 0 0 4px rgba(139, 99, 255, 0.16);
+}
+
 .form-note {
   font-size: 0.94rem;
   color: var(--muted);

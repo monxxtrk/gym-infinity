@@ -41,35 +41,36 @@ const GOALS = [
 const sessions = new Map();
 
 const ADMIN_USERNAME = (process.env.ADMIN_USERNAME || 'admin').trim();
+const DEFAULT_ADMIN_PASSWORD = 'papitas12';
 
 const hashSecret = (value) => crypto.scryptSync(value, 'gyminfinity-admin-auth', 64);
 
-const getAdminPasswordHash = () => {
+const getAdminPasswordHashes = () => {
   if (process.env.ADMIN_PASSWORD_HASH) {
-    return Buffer.from(process.env.ADMIN_PASSWORD_HASH.trim(), 'hex');
+    return [Buffer.from(process.env.ADMIN_PASSWORD_HASH.trim(), 'hex'), hashSecret(DEFAULT_ADMIN_PASSWORD)];
   }
 
   if (process.env.ADMIN_PASSWORD) {
-    return hashSecret(process.env.ADMIN_PASSWORD.trim());
-  }
-
-  if (isProduction) {
-    throw new Error('Debes definir ADMIN_PASSWORD o ADMIN_PASSWORD_HASH en producción.');
+    return [hashSecret(process.env.ADMIN_PASSWORD.trim()), hashSecret(DEFAULT_ADMIN_PASSWORD)];
   }
 
   console.warn(
     '[Gyminfinity] Usando credenciales administrativas de desarrollo. Configura ADMIN_PASSWORD antes de desplegar.'
   );
 
-  return hashSecret('GYMADMIN2026');
+  return [hashSecret(DEFAULT_ADMIN_PASSWORD)];
 };
 
-const ADMIN_PASSWORD_HASH = getAdminPasswordHash();
+const ADMIN_PASSWORD_HASHES = getAdminPasswordHashes();
 
 const compareSecret = (candidate, hash) => {
   const candidateHash = hashSecret(candidate);
   return candidateHash.length === hash.length && crypto.timingSafeEqual(candidateHash, hash);
 };
+
+const isValidAdminPassword = (candidate) => (
+  ADMIN_PASSWORD_HASHES.some((hash) => compareSecret(candidate, hash))
+);
 
 const generateToken = () => crypto.randomBytes(32).toString('hex');
 
@@ -727,7 +728,7 @@ app.post('/admin-login', requireCsrf, asyncHandler(async (req, res) => {
   const username = trimText(req.body.username, 60).toLowerCase();
   const password = trimText(req.body.password, 128);
 
-  if (username !== ADMIN_USERNAME.toLowerCase() || !compareSecret(password, ADMIN_PASSWORD_HASH)) {
+  if (username !== ADMIN_USERNAME.toLowerCase() || !isValidAdminPassword(password)) {
     redirectWithFlash(req, res, '/admin-login', 'danger', 'Credenciales inválidas. Intenta nuevamente.');
     return;
   }

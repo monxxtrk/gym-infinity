@@ -155,4 +155,19 @@ document.addEventListener('DOMContentLoaded', () => {
       window.print();
     });
   });
+
+  document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+    const input = document.getElementById(button.getAttribute('aria-controls'));
+
+    if (!input) {
+      return;
+    }
+
+    button.addEventListener('click', () => {
+      const shouldShow = input.type === 'password';
+      input.type = shouldShow ? 'text' : 'password';
+      button.textContent = shouldShow ? 'Ocultar' : 'Ver';
+      button.setAttribute('aria-label', shouldShow ? 'Ocultar contrasena' : 'Mostrar contrasena');
+    });
+  });
 });
