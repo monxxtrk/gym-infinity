@@ -1,7 +1,7 @@
 {
   "name": "gyminfinity-site",
   "version": "1.0.0",
-  "description": "Plataforma web de Gyminfinity con autenticación, gestión administrativa y experiencia de cliente.",
+  "description": "Plataforma web de Gyminfinity con autenticacion, gestion administrativa y experiencia de cliente.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

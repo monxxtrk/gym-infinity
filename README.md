@@ -1,96 +1,147 @@
 # Gyminfinity
 
-Plataforma web para Gyminfinity con sitio público, área privada de cliente y dashboard administrativo.
+Plataforma web para Gyminfinity con sitio publico, area privada de cliente, dashboard administrativo y una app Android que abre la web en un WebView.
 
-## Qué cambió
+## Estado del proyecto
 
-- Autenticación administrativa por sesión, sin claves en la URL.
-- Área de cliente protegida con login usando correo y teléfono.
-- Control real de membresía con vencimiento y renovación.
-- Formularios con validación backend y protección CSRF.
-- Gestión administrativa de productos, planes, rutinas, dietas, usuarios y pedidos.
-- Interfaz reorganizada y CSS consolidado para una base más profesional.
+- Backend Node.js + Express.
+- Vistas EJS.
+- Base de datos SQLite.
+- Panel administrativo con sesiones.
+- Area de cliente protegida.
+- Gestion de productos, planes, rutinas, dietas, usuarios, pedidos y facturacion.
+- App Android Studio en `android-app/`.
+- Pruebas automatizadas con Jest + Supertest.
 
 ## Requisitos
 
 - Node.js 18 o superior.
+- npm.
+- Android Studio, solo si vas a probar o compilar la app Android.
 
-## Instalación
+## Instalacion local
 
-1. Instala dependencias con `npm install`.
-2. Copia `.env.example` a `.env`.
-3. Ajusta al menos `ADMIN_USERNAME` y `ADMIN_PASSWORD`.
-4. Inicia el proyecto con `npm start`.
-5. Abre `http://localhost:3000`.
+1. Instala dependencias:
+
+```powershell
+npm install
+```
+
+2. Crea tu archivo `.env` a partir del ejemplo:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+3. Edita `.env` y cambia al menos:
+
+```env
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=CAMBIA_ESTA_CLAVE
+```
+
+4. Inicia el servidor:
+
+```powershell
+npm start
+```
+
+5. Abre la web:
+
+```text
+http://localhost:3000
+```
 
 ## Scripts
 
-- `npm start`: inicia la aplicación.
+- `npm start`: inicia la aplicacion.
 - `npm run dev`: inicia el servidor en modo watch.
-- `npm run check`: verifica sintaxis de los archivos JavaScript principales.
+- `npm run check`: revisa sintaxis de los JavaScript principales.
+- `npm test`: ejecuta pruebas automatizadas.
+- `npm run test:watch`: ejecuta pruebas en modo observacion.
 
-## Pruebas automatizadas
+## App Android
 
-El proyecto usa Jest + Supertest para probar rutas de Express sin levantar manualmente el servidor.
+La carpeta `android-app/` contiene un proyecto Android Studio separado.
 
-Comandos de pruebas:
+Para probar en emulador:
 
-- `npm test`: ejecuta las pruebas automatizadas.
-- `npm run test:watch`: ejecuta las pruebas en modo observacion mientras desarrollas.
+1. Inicia el servidor web con `npm start`.
+2. Abre `android-app/` desde Android Studio.
+3. Espera la sincronizacion de Gradle.
+4. Ejecuta la configuracion `app` en un emulador.
 
-Las pruebas actuales cubren:
+En debug, Android carga:
 
-- Carga de la pagina principal.
-- Inicio de sesion administrativa con CSRF y sesion.
-- Registro de cliente y generacion de factura con tarjeta de credito.
+```text
+http://10.0.2.2:3000
+```
 
-Los tests usan una base SQLite separada (`__tests__/gyminfinity.test.db`) que se crea y elimina durante la ejecucion, para no modificar `gyminfinity.db`.
+Esa direccion permite que el emulador acceda al `localhost` del PC.
+
+Para publicar una APK/AAB real, cambia la URL `release` en `android-app/app/build.gradle` por el dominio HTTPS de produccion.
+
+## Despliegue web con Render
+
+1. Sube este repositorio a GitHub.
+2. Entra a [Render](https://render.com) y conecta tu cuenta de GitHub.
+3. Crea un **New Web Service** desde este repositorio.
+4. Usa estos comandos:
+
+```text
+Build Command: npm install
+Start Command: npm start
+```
+
+5. Agrega variables de entorno en Render:
+
+```env
+NODE_ENV=production
+ADMIN_USERNAME=tu_usuario
+ADMIN_PASSWORD=tu_clave_segura
+```
+
+6. Cuando Render entregue la URL publica, usala como dominio de produccion.
+
+Nota: SQLite funciona para demo/proyecto academico. En un despliegue real con datos importantes conviene usar una base persistente externa o configurar almacenamiento persistente, porque algunos servicios pueden reiniciar archivos locales.
 
 ## Variables de entorno
 
-- `PORT`: puerto del servidor.
+- `PORT`: puerto del servidor. Render lo define automaticamente.
 - `NODE_ENV`: usa `production` en despliegue.
-- `DB_FILE`: ruta opcional de la base SQLite. Si no se define, usa `gyminfinity.db`.
+- `DB_FILE`: ruta opcional de la base SQLite.
 - `ADMIN_USERNAME`: usuario del panel administrativo.
-- `ADMIN_PASSWORD`: contraseña del panel administrativo.
-- `ADMIN_PASSWORD_HASH`: alternativa opcional para definir la contraseña ya hasheada en hexadecimal.
+- `ADMIN_PASSWORD`: contrasena del panel administrativo.
+- `ADMIN_PASSWORD_HASH`: alternativa opcional para guardar la contrasena ya hasheada en hexadecimal.
 
-## Base de datos y dinero recibido
+## Base de datos
 
-La base de datos principal esta en el archivo `gyminfinity.db`, en la raiz del proyecto.
-
-Para verla y modificar datos manualmente puedes usar una herramienta como DB Browser for SQLite y abrir:
-
-`C:\Users\MI PC\gyminfinity-site\gyminfinity.db`
+La base local por defecto es `gyminfinity.db`, en la raiz del proyecto. Ese archivo no se sube a GitHub porque puede contener datos privados o temporales.
 
 Tablas importantes:
 
 - `users`: clientes, planes y vencimiento de membresia.
 - `products`: productos y precios visibles.
-- `orders`: pedidos, factura, metodo de pago, estado de pago, monto y destino del dinero.
-
-En el panel administrativo, entra a `Facturacion` para ver:
-
-- Dinero confirmado total.
-- Dinero por tarjeta.
-- Dinero en efectivo.
-- Facturas pendientes.
-
-El campo `payment_destination` indica a donde se registra el dinero:
-
-- Tarjeta: cuenta bancaria Gyminfinity.
-- Efectivo: caja general Gyminfinity.
-
-Esta implementacion deja la trazabilidad interna. Para que el dinero llegue realmente a una cuenta bancaria externa hace falta conectar una pasarela de pagos real, como Stripe, Mercado Pago, Wompi o PayU.
+- `orders`: pedidos, facturas, metodo de pago, estado, monto y destino del dinero.
 
 ## Estructura principal
 
-- `server.js`: servidor Express, autenticación, sesiones, validación y rutas.
-- `db.js`: inicialización y acceso a SQLite.
-- `views/`: plantillas EJS públicas, cliente y administración.
-- `public/css/style.css`: sistema visual consolidado.
-- `public/js/main.js`: navegación, carrusel y tabs de interfaz.
+- `server.js`: servidor Express, autenticacion, sesiones, validacion y rutas.
+- `db.js`: inicializacion y acceso a SQLite.
+- `views/`: plantillas EJS.
+- `public/css/style.css`: estilos principales.
+- `public/js/main.js`: navegacion, carrusel y tabs.
+- `android-app/`: proyecto Android Studio.
+- `__tests__/`: pruebas automatizadas.
 
-## Nota de seguridad
+## Antes de subir a GitHub
 
-En desarrollo, si no defines `ADMIN_PASSWORD`, la app usa una credencial temporal local y avisa por consola. En producción debes configurar credenciales por entorno antes de desplegar.
+Ejecuta:
+
+```powershell
+npm run check
+npm test
+git status --short
+```
+
+No subas `.env`, `node_modules/`, `gyminfinity.db`, carpetas `build/`, `.gradle/`, `.idea/` ni `local.properties`.

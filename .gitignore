@@ -1,4 +1,14 @@
 node_modules/
 .env
+.env.*
+!.env.example
 gyminfinity.db
+*.db
+!__tests__/*.js
 npm-debug.log*
+*.log
+coverage/
+android-app/.gradle/
+android-app/local.properties
+android-app/**/build/
+android-app/.idea/
